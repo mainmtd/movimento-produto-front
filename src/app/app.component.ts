@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { MovimentoProdutoComponent } from './movimento-produto/movimento-produto.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  imports: [MovimentoProdutoComponent],
+  template: `<app-movimento-produto></app-movimento-produto>`,
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
   title = 'movimento-produto-front';

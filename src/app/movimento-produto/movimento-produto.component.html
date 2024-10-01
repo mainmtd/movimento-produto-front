@@ -1,0 +1,87 @@
+<div class="container">
+    <h2 class="text-center">Movimentos Manuais</h2>
+    <form>
+      <div class="row"> <!-- Linha para mês e ano -->
+        <div class="col-md-4 mb-3">
+          <label for="mes">Mês:</label>
+          <input type="number" [(ngModel)]="movimento.datMes" name="datMes" class="form-control" id="mes" required [disabled]="!formEnabled" min="1" max="12">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="ano">Ano:</label>
+          <input type="number" [(ngModel)]="movimento.datAno" name="datAno" class="form-control" id="ano" required [disabled]="!formEnabled" min="0">
+        </div>
+      </div>
+
+      <div class="row"> <!-- Linha para produto e cosif -->
+        <div class="col-md-8 mb-3">
+          <label for="produto">Produto:</label>
+          <select [(ngModel)]="selectedProduto" (change)="onProdutoChange()" name="selectedProduto" class="form-control" id="produto" required [disabled]="!formEnabled">
+            <option value="">-- Selecione --</option>
+            <option *ngFor="let produto of produtos" [value]="produto.codProduto">
+              {{ produto.desProduto }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-8 mb-3">
+          <label for="cosif">Cosif:</label>
+          <select [(ngModel)]="movimento.codCosif" name="codCosif" class="form-control" id="cosif" [disabled]="!formEnabled || !selectedProduto">
+            <option value="">-- Selecione --</option>
+            <option *ngFor="let cosif of cosifs" [value]="cosif.codCosif">
+              {{ cosif.codCosif }} - ({{ cosif.codClassificacao }})
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row"> <!-- Linha para valor -->
+        <div class="col-md-8 mb-3">
+          <label for="valor">Valor:</label>
+          <input type="number" [(ngModel)]="movimento.valor" name="valor" class="form-control" id="valor" required [disabled]="!formEnabled">
+        </div>
+      </div>
+      
+      <div class="row"> <!-- Linha para descrição -->
+        <div class="col-md-8 mb-3">
+          <label for="descricao">Descrição:</label>
+          <textarea [(ngModel)]="movimento.descricao" name="descricao" class="form-control" id="descricao" rows="2" required [disabled]="!formEnabled"></textarea>
+        </div>
+      </div>
+
+      <div class="row"> <!-- Linha para os botões -->
+        <div class="col-md-12">
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-primary me-2" (click)="clearForm()">Limpar</button>
+            <button type="button" class="btn btn-primary me-2" (click)="toggleForm()">{{ formEnabled ? 'Cancelar' : 'Novo' }}</button>
+            <button type="button" class="btn btn-primary me-2" (click)="createMovimento()" [disabled]="!formEnabled">Incluir</button>            
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <table class="table table-bordered table-striped mt-4">
+      <thead>
+        <tr>
+          <th class="text-start">Mês</th>
+          <th class="text-start">Ano</th>
+          <th class="text-start">Código do Produto</th>
+          <th class="text-start">Descrição do Produto</th>
+          <th class="text-start">NR Lançamento</th>
+          <th class="text-start">Cosif</th>
+          <th class="text-start">Descrição</th>
+          <th class="text-start">Valor</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let mov of movimentos">
+          <td class="text-center">{{ mov.datMes }}</td>
+          <td class="text-center">{{ mov.datAno }}</td>
+          <td class="text-center">{{ mov.codProduto }}</td>
+          <td class="text-center">{{ mov.descricaoProduto }}</td>
+          <td class="text-center">{{ formatarLancamento(mov.numLancamento) }}</td>
+          <td class="text-center">{{ mov.codCosif }}</td>
+          <td class="text-center">{{ mov.descricao }}</td>
+          <td class="text-center">{{ mov.valor }}</td>
+        </tr>
+      </tbody>
+    </table>
+</div>
