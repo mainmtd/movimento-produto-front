@@ -40,7 +40,7 @@
     <div class="row">
       <div class="col-md-8 mb-3">
         <label for="valor">Valor:</label>
-        <input type="number" [(ngModel)]="movimento.valor" name="valor" class="form-control" id="valor" required [disabled]="!formEnabled" min="0" (blur)="formatarValor()">
+        <input type="text" [(ngModel)]="movimento.valor" (input)="formatarValorInput($event)" name="valor" class="form-control" id="valor" required [disabled]="!formEnabled" placeholder="0,00"/>
       </div>
     </div>
     
@@ -55,7 +55,7 @@
       <div class="col-md-12">
         <div class="btn-group" role="group">
           <button type="button" class="btn btn-primary me-2" (click)="clearForm()">Limpar</button>
-          <button type="button" class="btn btn-primary me-2" (click)="toggleForm()">{{ formEnabled ? 'Cancelar' : 'Novo' }}</button>
+          <button type="button" class="btn btn-primary me-2" (click)="toggleForm()">{{ 'Novo' }}</button>
           <button type="button" class="btn btn-primary me-2" (click)="createMovimento()" [disabled]="!formEnabled || !isFormValid()">Incluir</button>         
         </div>
       </div>

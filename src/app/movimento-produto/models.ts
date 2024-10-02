@@ -10,8 +10,8 @@ export interface Produto {
   }
   
   export interface Movimento {
-    datMes: number;
-    datAno: number;
+    datMes: number | null;
+    datAno: number | null;
     codProduto: string;
     codCosif: string;
     descricao: string;
@@ -19,6 +19,6 @@ export interface Produto {
     descricaoProduto: string;
     numLancamento: number;
     codUsuario: string;
-    valor: number;
+    valor: number | null;
   }
   
