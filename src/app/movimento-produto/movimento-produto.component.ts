@@ -1,33 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { FormsModule } from '@angular/forms'; // Adicione isso
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-
-interface Produto {
-  codProduto: string;
-  desProduto: string;
-  cosifs: { codCosif: string; codClassificacao: string }[];
-}
-
-interface Movimento {
-  datMes: number;
-  datAno: number;
-  codProduto: string;
-  codCosif: string;
-  descricao: string;
-  dataMovimento: string;
-  descricaoProduto:string;
-  numLancamento:number;
-  codUsuario: string;
-  valor: number;
-}
+import { MovimentoProdutoService } from './movimento-produto.service';
+import { Produto, Movimento } from './models';
 
 @Component({
   selector: 'app-movimento-produto',
-  standalone: true, // Certifique-se de que isso esteja definido como true
+  standalone: true,
   templateUrl: './movimento-produto.component.html',
   styleUrls: ['./movimento-produto.component.scss'],
-  imports: [FormsModule, CommonModule], // Adicione o FormsModule aqui
+  imports: [FormsModule, CommonModule],
 })
 export class MovimentoProdutoComponent implements OnInit {
   produtos: Produto[] = [];
@@ -40,15 +22,17 @@ export class MovimentoProdutoComponent implements OnInit {
     codCosif: '',
     descricao: '',
     descricaoProduto: '',
-    numLancamento: -1,
+    numLancamento: 0,
     dataMovimento: new Date().toISOString(),
     codUsuario: 'TESTE',
     valor: 0,
   };
   movimentos: Movimento[] = [];
   formEnabled: boolean = false;
+  alertMessage: string = '';
+  alertType: string = '';
 
-  constructor(private http: HttpClient) {}
+  constructor(private movimentoProdutoService: MovimentoProdutoService) {}
 
   ngOnInit() {
     this.loadProdutos();
@@ -56,25 +40,56 @@ export class MovimentoProdutoComponent implements OnInit {
   }
 
   loadProdutos() {
-    this.http.get<Produto[]>('http://localhost:8080/api/produto').subscribe((data) => {
+    this.movimentoProdutoService.getProdutos().subscribe((data: Produto[]) => {
       this.produtos = data;
     });
   }
 
   loadMovimentos() {
-    this.http.get<Movimento[]>('http://localhost:8080/api/movimento').subscribe((data) => {
+    this.movimentoProdutoService.getMovimentos().subscribe((data: Movimento[]) => {
       this.movimentos = data;
     });
+  }
+
+  createMovimento() {
+    const movimentoComProduto = {
+      ...this.movimento,
+      codProduto: this.selectedProduto,
+    };
+
+    this.movimentoProdutoService.createMovimento(movimentoComProduto).subscribe(
+      (response: string) => {
+        console.log('Movimento criado com sucesso:', response);
+        this.loadMovimentos();
+        this.clearForm();
+        this.showAlert('Movimento criado com sucesso!', 'success');
+      },
+      (error: any) => {
+        console.error('Erro ao criar movimento:', error);
+        this.showAlert('Erro ao criar movimento. Tente novamente.', 'danger');
+      }
+    );
+  }
+
+  showAlert(message: string, type: string) {
+    this.alertMessage = message;
+    this.alertType = type;
+    
+    // Limpa a notificação após 5 segundos
+    setTimeout(() => {
+      this.alertMessage = '';
+      this.alertType = '';
+    }, 5000);
   }
 
   onProdutoChange() {
     const produtoSelecionado = this.produtos.find(prod => prod.codProduto === this.selectedProduto);
     
     if (produtoSelecionado) {
-      this.cosifs = produtoSelecionado.cosifs; // Atualiza a lista de cosifs com base no produto selecionado
-      this.movimento.codCosif = ''; // Reseta o codCosif
+      this.cosifs = produtoSelecionado.cosifs;
+      this.movimento.codCosif = '';
     } else {
-      this.cosifs = []; // Se nenhum produto for selecionado, limpa a lista de cosifs
+      this.cosifs = [];
     }
   }
   formatarLancamento(numLancamento: number): string {
@@ -93,28 +108,9 @@ export class MovimentoProdutoComponent implements OnInit {
     this.formEnabled = false;
   }
 
-  createMovimento() {
-    const movimentoComProduto = {
-      ...this.movimento,
-      codProduto: this.selectedProduto, // Adiciona o codProduto ao movimento
-    };
-  
-    this.http.post('http://localhost:8080/api/movimento', movimentoComProduto, { responseType: 'text' })
-      .subscribe(
-        (response) => {
-          console.log('Movimento criado com sucesso:', response);
-          this.loadMovimentos();
-          this.clearForm(); // Limpa o formulário após inclusão
-        },
-        (error) => {
-          console.error('Erro ao criar movimento:', error);
-        }
-      );
-  }
-
   resetForm() {
     this.movimento = {
-      datMes: new Date().getMonth() + 1, // Ajuste aqui para iniciar em 1
+      datMes: new Date().getMonth(),
       datAno: new Date().getFullYear(),
       codProduto: '',
       codCosif: '',
@@ -127,5 +123,41 @@ export class MovimentoProdutoComponent implements OnInit {
     };
     this.selectedProduto = '';
     this.cosifs = [];
+  }
+
+  validateMesAno() {
+    if (this.movimento.datMes < 1) {
+      this.movimento.datMes = 1;
+    } else if (this.movimento.datMes > 12) {
+      this.movimento.datMes = 12;
+    }
+  
+    if (this.movimento.datAno < 0) {
+      this.movimento.datAno = new Date().getFullYear();
+    }
+  }
+  
+  formatarValor() {
+    if (this.movimento.valor < 0) {
+      this.movimento.valor = this.movimento.valor * -1;
+    }
+  
+    if (!isNaN(this.movimento.valor)) {
+      this.movimento.valor = parseFloat(this.movimento.valor.toFixed(2));
+    }
+  }
+
+  isFormValid(): boolean {
+    return !!(
+      this.movimento.datMes && 
+      this.movimento.datMes >= 1 && this.movimento.datMes <= 12 &&
+      this.movimento.datAno && 
+      this.movimento.datAno > 0 &&
+      this.selectedProduto &&
+      this.movimento.codCosif &&
+      this.movimento.valor && 
+      this.movimento.valor >= 0 &&
+      this.movimento.descricao
+    );
   }
 }
