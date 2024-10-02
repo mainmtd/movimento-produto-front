@@ -40,7 +40,7 @@
     <div class="row">
       <div class="col-md-8 mb-3">
         <label for="valor">Valor:</label>
-        <input type="text" [(ngModel)]="movimento.valor" (input)="formatarValorInput($event)" name="valor" class="form-control" id="valor" required [disabled]="!formEnabled" placeholder="0,00"/>
+        <input type="text" mask="separator.2" [leadZero]="true" thousandSeparator="," placeholder="0.00" [(ngModel)]="movimento.valor" name="valor" class="form-control" id="valor" required [disabled]="!formEnabled" min="0" (blur)="formatarValor()">
       </div>
     </div>
     

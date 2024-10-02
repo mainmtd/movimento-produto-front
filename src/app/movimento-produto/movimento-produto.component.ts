@@ -3,13 +3,15 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MovimentoProdutoService } from './movimento-produto.service';
 import { Produto, Movimento } from './models';
+import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 
 @Component({
   selector: 'app-movimento-produto',
   standalone: true,
   templateUrl: './movimento-produto.component.html',
   styleUrls: ['./movimento-produto.component.scss'],
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, NgxMaskDirective, NgxMaskPipe],
+  providers: [provideNgxMask()]
 })
 export class MovimentoProdutoComponent implements OnInit {
   produtos: Produto[] = [];
@@ -160,15 +162,5 @@ export class MovimentoProdutoComponent implements OnInit {
       this.movimento.valor >= 0 &&
       this.movimento.descricao
     );
-  }
-
-  formatarValorInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-    let value = input.value.replace(/\D/g, '');
-    if (value) {
-      value = (parseFloat(value) / 100).toFixed(2).replace('.', ',');
-    }
-    input.value = value;
-    this.movimento.valor = parseFloat(value.replace(',', '.')) || 0;
   }
 }
