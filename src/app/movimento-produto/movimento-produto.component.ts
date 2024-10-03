@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MovimentoProdutoService } from './movimento-produto.service';
@@ -33,6 +33,7 @@ export class MovimentoProdutoComponent implements OnInit {
   formEnabled: boolean = false;
   alertMessage: string = '';
   alertType: string = '';
+  @ViewChild('valorInput') valorInputRef!: ElementRef;
 
   constructor(private movimentoProdutoService: MovimentoProdutoService) {}
 
@@ -105,6 +106,9 @@ export class MovimentoProdutoComponent implements OnInit {
 
   clearForm() {
     this.resetForm(); 
+    if (this.valorInputRef) {
+      this.valorInputRef.nativeElement.value = '';
+    }
     this.formEnabled = false;
   }
 
@@ -148,6 +152,26 @@ export class MovimentoProdutoComponent implements OnInit {
     if (this.movimento.valor !== null && !isNaN(this.movimento.valor)) {
       this.movimento.valor = parseFloat(this.movimento.valor.toFixed(2));
     }
+  }
+
+  formatarValorMonetario(event: any) {
+    let valor = event.target.value;
+    if (valor === '') {
+      this.movimento.valor = null;
+      event.target.value = '';
+      return;
+    }
+    valor = valor.replace(/\D/g, '');    
+    if (valor === '') {
+      this.movimento.valor = null;
+      event.target.value = '';
+      return;
+    }
+    let valorEmCentavos = (parseInt(valor, 10) / 100).toFixed(2);
+  
+    event.target.value = valorEmCentavos;
+  
+    this.movimento.valor = parseFloat(valorEmCentavos);
   }
 
   isFormValid(): boolean {
